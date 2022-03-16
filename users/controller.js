@@ -7,6 +7,7 @@ const userService = require('./service');
 
 router.post('/register', registerSchema, register);
 router.post('/authenticate', authenticateSchema, authenticate);
+router.get('/', authorize(), getAll);
 
 module.exports = router;
 
@@ -37,5 +38,11 @@ function authenticateSchema(req, res, next) {
 function authenticate(req, res, next) {
     userService.authenticate(req.body)
         .then(user => res.json(user))
+        .catch(next);
+}
+
+function getAll(req, res, next) {
+    userService.getAll()
+        .then(users => res.json(users))
         .catch(next);
 }

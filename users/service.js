@@ -6,6 +6,7 @@ const db = require('_helpers/db');
 module.exports = {
     create,
     authenticate,
+    getAll,
 };
 
 async function create(params) {
@@ -32,6 +33,10 @@ async function authenticate({ username, password }) {
     // authentication successful
     const token = jwt.sign({ sub: user.id }, config.secret, { expiresIn: '7d' });
     return { ...omitHash(user.get()), token };
+}
+
+async function getAll() {
+    return await db.User.findAll();
 }
 
 // helper functions
