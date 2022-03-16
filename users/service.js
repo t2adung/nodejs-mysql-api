@@ -5,6 +5,7 @@ const db = require('_helpers/db');
 
 module.exports = {
     create,
+    authenticate,
 };
 
 async function create(params) {
@@ -20,4 +21,28 @@ async function create(params) {
 
     // save user
     await db.User.create(params);
+}
+
+async function authenticate({ username, password }) {
+    const user = await db.User.scope('withHash').findOne({ where: { username } });
+
+    if (!user || !(await bcrypt.compare(password, user.hash)))
+        throw 'Username or password is incorrect';
+
+    // authentication successful
+    const token = jwt.sign({ sub: user.id }, config.secret, { expiresIn: '7d' });
+    return { ...omitHash(user.get()), token };
+}
+
+// helper functions
+
+async function getUser(id) {
+    const user = await db.User.findByPk(id);
+    if (!user) throw 'User not found';
+    return user;
+}
+
+function omitHash(user) {
+    const { hash, ...userWithoutHash } = user;
+    return userWithoutHash;
 }
